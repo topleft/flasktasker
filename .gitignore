@@ -1,0 +1,6 @@
+project/_config.py
+env
+venv
+*.pyc
+__pycache__
+*.DS_Store
