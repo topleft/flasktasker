@@ -2,7 +2,9 @@ import sqlite3
 from functools import wraps
 
 from flask import Flask, flash, redirect, render_template, \
-    request, session, url_for
+    request, session, url_for, g
+
+from forms import AddTaskForm
 
 app = Flask(__name__)
 app.config.from_object('_config')
@@ -43,19 +45,19 @@ def login():
 @login_required
 def tasks():
     g.db = connect_db()
-    cur = g.db.execute(
+    cursor = g.db.execute(
         'select name, due_date, priority, task_id from tasks where status=1'
     )
     open_tasks = [
         dict(name=row[0], due_date=row[1], priority=row[2],
-             task_id=row[3]) for row in cur.fetchall()
+             task_id=row[3]) for row in cursor.fetchall()
     ]
-    cur = g.db.execute(
+    cursor = g.db.execute(
         'select name, due_date, priority, task_id from tasks where status=0'
     )
     closed_tasks = [
         dict(name=row[0], due_date=row[1], priority=row[2],
-             task_id=row[3]) for row in cur.fetchall()
+             task_id=row[3]) for row in cursor.fetchall()
     ]
     g.db.close()
     return render_template(
@@ -100,6 +102,19 @@ def complete(task_id):
     g.db.commit()
     g.db.close()
     flash('The task was marked as complete.')
+    return redirect(url_for('tasks'))
+
+# Mark tasks as incomplete
+@app.route('/incomplete/<int:task_id>/')
+@login_required
+def incomplete(task_id):
+    g.db = connect_db()
+    g.db.execute(
+        'update tasks set status = 1 where task_id='+str(task_id)
+    )
+    g.db.commit()
+    g.db.close()
+    flash('The task was marked as incomplete.')
     return redirect(url_for('tasks'))
 
 
