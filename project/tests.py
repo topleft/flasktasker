@@ -34,6 +34,23 @@ class AllTests(unittest.TestCase):
         return self.app.post('/', data=dict(
             name=name, password=password), follow_redirects=True)
 
+    def logout(self):
+        return self.app.get('logout/', follow_redirects=True)
+
+    def create_user(self, name, email, password):
+        new_user = User(name=name, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+    def create_task(self):
+        return self.app.post('add/', data=dict(
+            name='Go to the bank',
+            due_date='02/05/2014',
+            priority='1',
+            posted_date='02/04/2014',
+            status='1'
+        ), follow_redirects=True)
+
     ############################
     #### setup and teardown ####
     ############################
@@ -100,6 +117,87 @@ class AllTests(unittest.TestCase):
             b'That username and/or email already exist.',
             response.data
         )
+
+    def test_logged_in_users_can_logout(self):
+        self.registerMichael()
+        self.login(self.user['name'], self.user['password'])
+        response = self.logout()
+        self.assertIn(b'Goodbye!', response.data)
+
+    def test_not_logged_in_users_can_logout(self):
+        response = self.logout()
+        self.assertNotIn(b'Goodbye!', response.data)
+
+    def test_logged_in_users_can_access_tasks_page(self):
+        self.registerMichael()
+        self.login(self.user['name'], self.user['password'])
+        response = self.app.get('tasks/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Add a new task:', response.data)
+
+    def test_not_logged_in_users_cannot_access_tasks_page(self):
+        response = self.app.get('tasks/', follow_redirects=True)
+        self.assertIn(b'You need to login first.', response.data)
+
+    def test_users_can_add_tasks(self):
+        user = self.user
+        self.create_user(user['name'], user['email'], user['password'])
+        self.login(user['name'], user['password'])
+        self.app.get('tasks/', follow_redirects=True)
+        response = self.create_task()
+        self.assertIn(
+            b'New entry was successfully posted. Thanks.', response.data
+    )
+
+    def test_users_cannot_add_tasks_when_error(self):
+        user = self.user
+        self.create_user(user['name'], user['email'], user['password'])
+        self.login(user['name'], user['password'])
+        self.app.get('tasks/', follow_redirects=True)
+        response = self.app.post('add/', data=dict(
+            name='Go to the bank',
+            due_date='',
+            priority='1',
+            posted_date='02/05/2014',
+            status='1'
+        ), follow_redirects=True)
+        self.assertIn(b'This field is required.', response.data)
+
+    def test_users_can_complete_tasks(self):
+        self.create_user('Michael', 'michael@realpython.com', 'python')
+        self.login('Michael', 'python')
+        self.app.get('tasks/', follow_redirects=True)
+        self.create_task()
+        response = self.app.get("complete/1/", follow_redirects=True)
+        self.assertIn(b'The task is complete. Nice.', response.data)
+
+    def test_users_can_delete_tasks(self):
+        self.create_user('Michael', 'michael@realpython.com', 'python')
+        self.login('Michael', 'python')
+        self.app.get('tasks/', follow_redirects=True)
+        self.create_task()
+        response = self.app.get("delete/1/", follow_redirects=True)
+        self.assertIn(b'The task was deleted.', response.data)
+
+    # def test_users_cannot_complete_tasks_that_are_not_created_by_them(self):
+    #     user = self.user
+    #     self.registerMichael()
+    #     self.login(user['name'], user['password'])
+    #     self.app.get('tasks/', follow_redirects=True)
+    #     self.create_task()
+    #     self.logout()
+    #     self.create_user('topleft', 'pete@oete.com', 'topleft')
+    #     self.login('topleft', 'topleft')
+    #     self.app.get('tasks/', follow_redirects=True)
+    #     response = self.app.get("complete/1/", follow_redirects=True)
+    #     self.assertNotIn(
+    #         b'The task is complete. Nice.', response.data
+    #     )
+
+
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,7 +28,7 @@ def login_required(test):
         if "logged_in" in session:
             return test(*args, **kwargs)
         else:
-            flash("You need to be logged in first")
+            flash("You need to login first.")
             return redirect(url_for('login'))
     return wrap
 
@@ -46,6 +46,7 @@ def closed_tasks():
 
 
 @app.route('/logout/')
+@login_required
 def logout():
     session.pop('logged_in', None)
     session.pop('user_id', None)
