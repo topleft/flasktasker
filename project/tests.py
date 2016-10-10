@@ -82,7 +82,7 @@ class AllTests(unittest.TestCase):
     def test_form_is_present(self):
         response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'Please login to access your task list', response.data)
+        self.assertIn(b'Please sign in to access your task list', response.data)
 
     def test_users_cannot_login_unless_registered(self):
         response = self.login('foo', 'bar')
@@ -179,20 +179,20 @@ class AllTests(unittest.TestCase):
         response = self.app.get("delete/1/", follow_redirects=True)
         self.assertIn(b'The task was deleted.', response.data)
 
-    # def test_users_cannot_complete_tasks_that_are_not_created_by_them(self):
-    #     user = self.user
-    #     self.registerMichael()
-    #     self.login(user['name'], user['password'])
-    #     self.app.get('tasks/', follow_redirects=True)
-    #     self.create_task()
-    #     self.logout()
-    #     self.create_user('topleft', 'pete@oete.com', 'topleft')
-    #     self.login('topleft', 'topleft')
-    #     self.app.get('tasks/', follow_redirects=True)
-    #     response = self.app.get("complete/1/", follow_redirects=True)
-    #     self.assertNotIn(
-    #         b'The task is complete. Nice.', response.data
-    #     )
+    def test_users_cannot_complete_tasks_that_are_not_created_by_them(self):
+        user = self.user
+        self.registerMichael()
+        self.login(user['name'], user['password'])
+        self.app.get('tasks/', follow_redirects=True)
+        self.create_task()
+        self.logout()
+        self.create_user('topleft', 'pete@oete.com', 'topleft')
+        self.login('topleft', 'topleft')
+        self.app.get('tasks/', follow_redirects=True)
+        response = self.app.get("complete/1/", follow_redirects=True)
+        self.assertNotIn(
+            b'The task is complete. Nice.', response.data
+        )
 
 
 
