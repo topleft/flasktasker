@@ -25,6 +25,10 @@ label {
   font-weight: bold;
 }
 
+.half-width {
+  width: 50%;
+}
+
 .input-group {
   margin-bottom: 15px;
 }
@@ -130,16 +134,21 @@ label {
   color:#ffffff;
   font-size:13px;
   padding:3px 12px;
-  margin: 0;
+  margin: 5px 0;
   text-decoration:none;
   position:relative;
 }
 
 .inline-form .input-group{
   display: inline-block;
-  margin: 10px 5px;  
+  margin: 10px 10px;
 }
 
 .input-group input {
   width: 100%;
 }
+
+.error {
+  color: red;
+  font-size: .8em;
+  background-color: #FFFFFF;

@@ -12,6 +12,11 @@ db = SQLAlchemy(app)
 
 from models import Task, User
 
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash("Error in the %s field - %s" % (
+                getattr(form, field).label.text, error), 'error')
 
 def login_required(test):
     @wraps(test)
@@ -99,7 +104,8 @@ def new_task():
             db.session.add(new_task)
             db.session.commit()
             flash('New entry was successfully posted. Thanks.')
-    return redirect(url_for('tasks'))
+            return redirect(url_for('tasks'))
+    return render_template('tasks.html', form=form)
 
 
 @app.route('/complete/<int:task_id>/')
