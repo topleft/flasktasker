@@ -143,14 +143,14 @@ def complete(task_id):
     return redirect(url_for('tasks'))
 
 
-@app.route('/incomplete/<int:task_id>/')
-@login_required
-def incomplete(task_id):
-    new_id = task_id
-    db.session.query(Task).filter_by(task_id=new_id).update({"status": "1"})
-    db.session.commit()
-    flash('The task is now incomplete. Get to work :)')
-    return redirect(url_for('tasks'))
+# @app.route('/incomplete/<int:task_id>/')
+# @login_required
+# def incomplete(task_id):
+#     new_id = task_id
+#     db.session.query(Task).filter_by(task_id=new_id).update({"status": "1"})
+#     db.session.commit()
+#     flash('The task is now incomplete. Get to work :)')
+#     return redirect(url_for('tasks'))
 
 
 @app.route('/delete/<int:task_id>/')
