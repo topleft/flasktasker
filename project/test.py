@@ -37,8 +37,8 @@ class AllTests(unittest.TestCase):
     def logout(self):
         return self.app.get('logout/', follow_redirects=True)
 
-    def create_user(self, name, email, password):
-        new_user = User(name=name, email=email, password=password)
+    def create_user(self, name, email, password, role='user'):
+        new_user = User(name=name, email=email, password=password, role=role)
         db.session.add(new_user)
         db.session.commit()
 
@@ -194,8 +194,49 @@ class AllTests(unittest.TestCase):
             b'The task is complete. Nice.', response.data
         )
 
+    def test_users_cannot_delete_tasks_that_are_not_created_by_them(self):
+        self.create_user('Michael', 'michael@realpython.com', 'python')
+        self.login('Michael', 'python')
+        self.app.get('tasks/', follow_redirects=True)
+        self.create_task()
+        self.logout()
+        self.create_user('Fletcher', 'fletcher@realpython.com', 'python101')
+        self.login('Fletcher', 'python101')
+        self.app.get('tasks/', follow_redirects=True)
+        response = self.app.get("delete/1/", follow_redirects=True)
+        self.assertIn(
+            b'You can only delete tasks that belong to you.', response.data
+        )
 
+    def test_default_user_role(self):
 
+        db.session.add(
+            User(
+                "Johnny",
+                "john@doe.com",
+                "johnny"
+            )
+        )
+
+        db.session.commit()
+
+        users = db.session.query(User).all()
+        print(users)
+        for user in users:
+            self.assertEquals(user.role, 'user')
+
+    def test_admin_can_delete_any_task(self):
+        user = self.user
+        self.registerMichael()
+        self.login(user['name'], user['password'])
+        self.app.get('tasks/', follow_redirects=True)
+        self.create_task()
+        self.logout()
+        self.create_user('topleft', 'pete@oete.com', 'topleft', 'admin')
+        self.login('topleft', 'topleft')
+        self.app.get('tasks/', follow_redirects=True)
+        response = self.app.get("delete/1/", follow_redirects=True)
+        self.assertIn(b'The task was deleted.', response.data)
 
 
 
