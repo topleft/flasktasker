@@ -59,8 +59,12 @@ class MainTests(unittest.TestCase):
         )
         db.session.add(bad_user)
         db.session.commit()
-        response = self.login('Jeremy', 'django')
-        self.assertEquals(response.status_code, 500)
+        self.assertRaises(ValueError, self.login, 'Jeremy', 'django')
+        try:
+            response = self.login('Jeremy', 'django')
+            self.assertEquals(response.status_code, 500)
+        except ValueError:
+            pass
 
 
 if __name__ == "__main__":
