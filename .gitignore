@@ -1,4 +1,3 @@
-project/_config.py
 env
 venv
 *.pyc
