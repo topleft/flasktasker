@@ -51,7 +51,8 @@ def tasks():
         'tasks.html',
         form=AddTaskForm(request.form),
         open_tasks=open_tasks(),
-        closed_tasks=closed_tasks()
+        closed_tasks=closed_tasks(),
+        username=session['name']
     )
 
 
@@ -79,7 +80,8 @@ def new_task():
         form=form,
         error=error,
         open_tasks=open_tasks(),
-        closed_tasks=closed_tasks()
+        closed_tasks=closed_tasks(),
+        username=session['name']
     )
 
 
